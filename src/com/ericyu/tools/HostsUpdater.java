@@ -56,14 +56,18 @@ public class HostsUpdater
 
     private static String getAddressFromDocument(Document doc)
     {
-        Elements eles = doc.getElementsByTag("pre");
-        if(eles.size()!=1)
+        //Elements eles = doc.getElementsByTag("pre");
+        Elements eles = doc.getElementsContainingText("#google hosts");
+        if(eles.size()==0)
         {
-            System.out.println("the number of elements with tag 'pre' is not current.( " + eles.size()+" )" );
+            System.out.println("can not find addresses.( " + eles.size()+" )" );
             return null;
         }
-        String ret = eles.first().html();
-        ret= ret.substring(ret.indexOf("#"));
+        String ret = eles.last().toString();
+        ret= ret.substring(ret.indexOf("#google hosts"));
+        ret = ret.replace("<br>", " ");
+        ret = ret.replace("&nbsp;", " ");
+
         return ret;
     }
 }
