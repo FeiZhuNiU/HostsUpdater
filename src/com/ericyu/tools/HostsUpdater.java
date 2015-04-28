@@ -41,7 +41,13 @@ public class HostsUpdater
         FileWriter fileWriter = null;
         try
         {
-            fileWriter = new FileWriter("C:\\Windows\\System32\\drivers\\etc\\hosts");
+            String os = System.getProperties().getProperty("os.name");
+            String file  = null;
+            if(os.equalsIgnoreCase("Linux"))
+                file = "/etc/hosts";
+            else
+                file = "C:\\Windows\\System32\\drivers\\etc\\hosts";
+            fileWriter = new FileWriter(file);
             fileWriter.write(str);
 
         } catch (IOException e)
