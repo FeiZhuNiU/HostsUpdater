@@ -2,41 +2,50 @@ package com.ericyu.tools;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by 麟 on 2015/2/27.
- */
 public class HostsUpdater
 {
-    private static String url_hosts = "http://www.360kb.com/kb/2_122.html";
+    private static Map<String,String> urlMap;
+    private static String url_hosts_github = "https://github.com/highsea/Hosts/blob/master/hosts";
+
+    static {
+        urlMap = new HashMap<String, String>();
+        urlMap.put(url_hosts_github,"0.docs.google.com");
+    }
+
+
     //private static String pattern = "/^(([1-9]|([1-9]\\d)|(1\\d\\d)|(2([0-4]\\d|5[0-5])))\\.)((d|([1-9]\\d)|(1\\d\\d)|(2([0-4]\\d|5[0-5])))\\.){2}([1-9]|([1-9]\\d)|(1\\d\\d)|(2([0-4]\\d|5[0-5])))$/";
     private static String pattern = "((2[0-4]\\d|25[0-5]|1?\\d?\\d)\\.){3}(2[0-4]\\d|25[0-5]|1?\\d?\\d)";
     public static void main(String[] args)
     {
-        try
+        Iterator iterator = urlMap.keySet().iterator();
+        while(iterator.hasNext())
         {
-            Document doc = Jsoup.parse(new URL(url_hosts).openConnection().getInputStream(), "UTF-8", url_hosts);
-            String addresses = getAddressFromDocument(doc);
-            if(addresses == null)
+            String url = iterator.next().toString();
+            String targetSting = urlMap.get(url);
+            try
             {
-                return;
-            }
-            UpdateHosts(addresses);
+                Document doc = Jsoup.parse(new URL(url).openConnection().getInputStream(), "UTF-8", url);
+                List<String> addresses = getAddressFromDocument(doc);
+                UpdateHosts(addresses);
 
-        } catch (IOException e)
-        {
-            e.printStackTrace();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
-    private static void UpdateHosts(String str)
+    private static void UpdateHosts(List<String> str)
     {
         FileWriter fileWriter = null;
         try
@@ -47,8 +56,10 @@ public class HostsUpdater
                 file = "/etc/hosts";
             else
                 file = "C:\\Windows\\System32\\drivers\\etc\\hosts";
-            fileWriter = new FileWriter(file);
-            fileWriter.write(str);
+            fileWriter = new FileWriter(file,true);   // true 表示续写
+            for (String s : str) {
+                fileWriter.write(s);
+            }
 
         } catch (IOException e)
         {
@@ -67,32 +78,20 @@ public class HostsUpdater
         }
     }
 
-    private static String getAddressFromDocument(Document doc)
+    private static List<String> getAddressFromDocument(Document doc)
     {
         //Elements eles = doc.getElementsByTag("pre");
-        Elements eles = doc.getElementsContainingText("www.google.com");
+        Elements eles = doc.getElementsByClass("blob-code");
+
         if(eles.size()==0)
         {
             System.out.println("can not find addresses.( " + eles.size()+" )" );
             return null;
         }
-        String ret = eles.last().toString();
-        Pattern p = Pattern.compile(pattern);
-        Matcher m = p.matcher(ret);
-        String temp = null;
-        if(m.find())
-        {
-            temp = m.group();
+        List<String> ret = new ArrayList<String>();
+        for (Element ele : eles) {
+            ret.add(ele.html());
         }
-        if(temp == null)
-        {
-            System.out.println("can not find ip address");
-            return null;
-        }
-
-        ret= ret.substring(ret.indexOf(temp));
-        ret = ret.replace("<br>", " ");
-        ret = ret.replace("&nbsp;", " ");
 
         return ret;
     }
