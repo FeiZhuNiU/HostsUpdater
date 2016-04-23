@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class HostsUpdater
 {
     private static Map<String,String> urlMap;
-    private static String url_hosts_github = "https://github.com/highsea/Hosts/blob/master/hosts";
+    private static String url_hosts_github = "https://github.com/racaljk/hosts/blob/master/hosts";
 
     static {
         urlMap = new HashMap<String, String>();
@@ -56,9 +56,9 @@ public class HostsUpdater
                 file = "/etc/hosts";
             else
                 file = "C:\\Windows\\System32\\drivers\\etc\\hosts";
-            fileWriter = new FileWriter(file,true);   // true 表示续写
+            fileWriter = new FileWriter(file,false);   // true 表示续写
             for (String s : str) {
-                fileWriter.write(s);
+                fileWriter.write(s+"\n");
             }
 
         } catch (IOException e)
