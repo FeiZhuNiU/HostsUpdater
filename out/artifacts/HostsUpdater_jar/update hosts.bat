@@ -1,0 +1,1 @@
+java -jar D:\workspace\github\HostsUpdater\out\artifacts\HostsUpdater_jar\HostsUpdater.jar
